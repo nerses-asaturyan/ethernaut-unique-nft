@@ -1,66 +1,57 @@
-## Foundry
+# Ethernaut Unique NFT Attack
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Attack Flow
 
-Foundry consists of:
+This repository demonstrates a reentrancy-based attack on a vulnerable NFT minting contract using a delegate contract and Foundry's delegation system. The attack leverages the ERC721 receiver hook to recursively mint multiple NFTs in a single transaction.
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+### Steps:
+1. **Deploy SimpleDelegateContract**: The attacker deploys a delegate contract with the target NFT contract address hardcoded.
+2. **Prepare Mint Call**: The attacker prepares a call to the vulnerable `mintNFTEOA()` function of the NFT contract.
+3. **Sign Delegation**: The attacker signs a delegation allowing the delegate contract to execute transactions on their behalf.
+4. **Execute Mint via Delegate**: The delegate contract executes the mint call. When the NFT is minted, the contract's `onERC721Received` hook is triggered.
+5. **Reentrancy in onERC721Received**: Inside the hook, the contract checks a reentry counter and, if allowed, calls `mintNFTEOA()` again, recursively minting more NFTs.
+6. **Verify Attack Success**: The script checks that the attacker received multiple NFTs.
+7. **Revoke Delegation**: The attacker attaches a new delegation to the zero address and triggers a simple transfer to exercise the new authorization and revoke the previous delegation.
 
-## Documentation
+## How to Use This Repo
 
-https://book.getfoundry.sh/
+### Prerequisites
+- [Foundry](https://book.getfoundry.sh/getting-started/installation) installed
+- RPC node URL and attacker private key set in `.env` file:
+  ```
+  ATTACKER_PK=<your_private_key>
+  RPC_URL=<your_rpc_url>
+  ```
 
-## Usage
+### Installation
+1. Clone the repository:
+	```sh
+	git clone <repo_url>
+	cd ethernaut-unique-nft
+	```
+2. Install dependencies:
+	```sh
+	forge install
+	```
 
-### Build
+### Running the Attack Script
+1. Clean previous builds:
+	```sh
+	forge clean
+	```
+2. Run the attack script:
+	```sh
+	forge script script/AttackNFT.s.sol --broadcast --rpc-url $(cat .env | grep RPC_URL | cut -d'=' -f2)
+	```
+	- The script will deploy the delegate contract, perform the attack, and verify the result.
 
-```shell
-$ forge build
-```
+### Customization
+- You can change the target NFT contract address by editing the hardcoded address in `SimpleDelegateContract.sol` and `AttackNFT.s.sol`.
+- Adjust the maximum reentry count in `SimpleDelegateContract.sol` to mint more NFTs if the vulnerability allows.
 
-### Test
+### Notes
+- This repo is for educational and testing purposes only.
+- Do not use on mainnet or with real funds.
 
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## License
+MIT
