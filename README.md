@@ -1,6 +1,6 @@
 
 
-# Ethernaut – Unique NFT Attack
+# Ethernaut Level 38: Unique NFT Attack
 
 ## Technical Attack Description
 
